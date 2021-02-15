@@ -1,0 +1,103 @@
+openapi: '3.0.2'
+info:
+  title: Photos API
+  description: 'photos.gkrupp.hu'
+  version: '0.1.0'
+servers:
+  - url: https://api.photos.gkrupp.hu
+
+
+components:
+  parameters:
+    photoId:
+      name: photoId
+      in: path
+      required: true
+      description: Unique identifier of a photo
+      schema:
+        type: string
+        minLength: 128
+        maxLength: 128
+    photoSize:
+      name: size
+      in: query
+      required: false
+      description: Photo size
+      schema:
+        type: string
+        default: preview
+        enum:
+          - original
+          - preview
+          - tile
+          - largeicon
+          - icon
+    albumId:
+      name: albumId
+      in: path
+      required: true
+      description: Unique identifier of an album
+      schema:
+        type: string
+        minLength: 64
+        maxLength: 64
+  responses:
+    photo:
+      description: Photo
+      content:
+        image/*:
+          schema:
+            type: string
+            format: binary
+
+
+tags:
+  - name: content
+    description: Static Content Provider
+  - name: photo
+    description: Photo API
+  - name: album
+    description: Album API
+
+
+paths:
+
+  /content/photo/{id}:
+    get:
+      tags:
+        - content
+      summary: Serve photo by ID
+      description: Serve a photo file referenced by its ID
+      operationId: contentPhotoId
+      parameters:
+      - $ref: '#/components/parameters/photoId'
+      - $ref: '#/components/parameters/photoSize'
+      responses:
+        200:
+          $ref: '#/components/responses/photo'
+        400:
+          description: Malformed {photoId}
+        404:
+          description: Photo not found
+
+  /photo/{id}:
+    get:
+      deprecated: true
+      tags:
+        - photo
+      summary: Photo metadata by ID
+      description: Return photo metadata referenced by its ID
+      operationId: photoId
+      parameters:
+      - $ref: '#/components/parameters/photoId'
+
+  /album/{id}:
+    get:
+      deprecated: true
+      tags:
+        - album
+      summary: Album metadata by ID
+      description: Return album metadata referenced by its ID
+      operationId: albumId
+      parameters:
+      - $ref: '#/components/parameters/albumId'

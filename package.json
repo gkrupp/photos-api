@@ -1,0 +1,33 @@
+{
+  "name": "photos-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint .",
+    "prettify": "./node_modules/.bin/prettier-standard **/*.js"
+  },
+  "author": "gkrupp",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint": "^7.20.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "prettier": "^2.2.1",
+    "prettier-standard": "^16.4.1",
+    "swagger-ui-express": "^4.1.6",
+    "yamljs": "^0.3.0"
+  },
+  "dependencies": {
+    "bull": "^3.20.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "express-cache-controller": "^1.1.0",
+    "helmet": "^4.4.1"
+  }
+}
