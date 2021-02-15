@@ -20,7 +20,7 @@ router.get('/photo/:id', async (req, res) => {
     return res.status(400).end()
   }
   // get path
-  const size = req.query.size || 'preview'
+  const size = (req.query.size || 'preview').toLowerCase()
   const serve = await photoDB.getServedFromId(id, size)
   // test tn
   if (!serve) return res.status(404).end()
@@ -30,21 +30,6 @@ router.get('/photo/:id', async (req, res) => {
   // serve
   res.header('Content-Disposition', `inline; filename="${serve.fileName}"`)
   return res.status(200).sendFile(serve.path)
-})
-
-// unknown path
-router.use(async (req, res) => {
-  return res.status(404).end()
-})
-
-// error handling
-router.use(async (err, req, res, next) => {
-  if (err.name === 'Error' && err.code === 'ENOENT') {
-    return res.status(404).end()
-  } else {
-    console.error(err, err.name, err.code)
-    return res.status(500).end()
-  }
 })
 
 module.exports = router

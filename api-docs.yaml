@@ -41,6 +41,26 @@ components:
         type: string
         minLength: 64
         maxLength: 64
+    includeId:
+      name: includeId
+      in: query
+      required: false
+      description: Include `id` field
+      schema:
+        type: boolean
+        default: false
+    details:
+      name: details
+      in: query
+      required: false
+      description: Metadata details
+      schema:
+        type: string
+        default: basic
+        enum:
+          - minimal
+          - basic
+          - all
   responses:
     photo:
       description: Photo
@@ -82,7 +102,6 @@ paths:
 
   /photo/{id}:
     get:
-      deprecated: true
       tags:
         - photo
       summary: Photo metadata by ID
@@ -90,10 +109,11 @@ paths:
       operationId: photoId
       parameters:
       - $ref: '#/components/parameters/photoId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/includeId'
 
   /album/{id}:
     get:
-      deprecated: true
       tags:
         - album
       summary: Album metadata by ID
@@ -101,3 +121,5 @@ paths:
       operationId: albumId
       parameters:
       - $ref: '#/components/parameters/albumId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/includeId'
