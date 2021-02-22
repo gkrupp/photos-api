@@ -2,7 +2,7 @@ const fs = require('fs')
 const router = require('express').Router()
 const config = require('../config')
 const MongoDBService = require(config.common('./services/MongoDBService'))
-const Photo = require(config.common('./models/Photo'))
+const Photo = require(config.common('./models/photo'))
 const photoDB = new Photo(MongoDBService.colls.photos)
 
 require('express-async-errors')

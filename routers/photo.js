@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const config = require('../config')
 const MongoDBService = require(config.common('./services/MongoDBService'))
-const Album = require(config.common('./models/Album'))
-const Photo = require(config.common('./models/Photo'))
+const Album = require(config.common('./models/album'))
+const Photo = require(config.common('./models/photo'))
 const photoDB = new Photo(MongoDBService.colls.photos)
 
 const defaultDetails = 'minimal'
