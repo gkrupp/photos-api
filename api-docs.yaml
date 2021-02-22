@@ -61,6 +61,23 @@ components:
           - minimal
           - basic
           - all
+    skip:
+      name: skip
+      in: query
+      required: false
+      description: Pagination offset
+      schema:
+        type: number
+        default: 0
+    limit:
+      name: limit
+      in: query
+      required: false
+      description: Pagination limit
+      schema:
+        type: number
+        default: 60
+        maximum: 60
   responses:
     photo:
       description: Photo
@@ -87,7 +104,7 @@ paths:
       tags:
         - content
       summary: Serve photo by ID
-      description: Serve a photo file referenced by its ID
+      description: Serves a photo file referenced by its ID
       operationId: contentPhotoId
       parameters:
       - $ref: '#/components/parameters/photoId'
@@ -100,26 +117,78 @@ paths:
         404:
           description: Photo not found
 
+
   /photo/{id}:
     get:
       tags:
         - photo
       summary: Photo metadata by ID
-      description: Return photo metadata referenced by its ID
+      description: Return a photo's metadata referenced by its ID
       operationId: photoId
       parameters:
       - $ref: '#/components/parameters/photoId'
       - $ref: '#/components/parameters/details'
       - $ref: '#/components/parameters/includeId'
+      responses:
+        200:
+          description: Photo object
+        400:
+          description: Malformed {photoId}
+        404:
+          description: Photo not found
+  
+  /photo/in/{albumId}:
+    get:
+      tags:
+        - photo
+      summary: Photos metadata by album
+      description: Returns photos' metadata referenced by their {albumId}
+      operationId: photosByAlbumId
+      parameters:
+      - $ref: '#/components/parameters/albumId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/skip'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        200:
+          description: Array of Photo object
+        400:
+          description: Malformed {albumId}
+
 
   /album/{id}:
     get:
       tags:
         - album
       summary: Album metadata by ID
-      description: Return album metadata referenced by its ID
+      description: Returns an album's metadata referenced by its ID
       operationId: albumId
       parameters:
       - $ref: '#/components/parameters/albumId'
       - $ref: '#/components/parameters/details'
       - $ref: '#/components/parameters/includeId'
+      responses:
+        200:
+          description: Album object
+        400:
+          description: Malformed {albumId}
+        404:
+          description: Album not found
+  
+  /album/in/{albumId}:
+    get:
+      tags:
+        - album
+      summary: Albums metadata by album
+      description: Returns albums' metadata referenced by their {albumId}
+      operationId: albumsByAlbumId
+      parameters:
+      - $ref: '#/components/parameters/albumId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/skip'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        200:
+          description: Array of Album object
+        400:
+          description: Malformed {albumId}

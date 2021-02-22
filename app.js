@@ -8,12 +8,14 @@ const app = express()
 app.use(helmet())
 
 // /api-docs
-const swaggerUi = require('swagger-ui-express')
-const YAML = require('yamljs')
-app.use('/api-docs', (req, res, next) => {
-  req.swaggerDoc = YAML.load('./api-docs.yaml')
-  next()
-}, swaggerUi.serve, swaggerUi.setup())
+if (process.env.NODE_ENV !== 'production') {
+  const swaggerUi = require('swagger-ui-express')
+  const YAML = require('yamljs')
+  app.use('/api-docs', (req, res, next) => {
+    req.swaggerDoc = YAML.load('./api-docs.yaml')
+    next()
+  }, swaggerUi.serve, swaggerUi.setup())
+}
 
 // /content
 const routerContent = require('./routers/content')
