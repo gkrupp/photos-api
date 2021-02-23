@@ -1,9 +1,6 @@
 require('dotenv')
-const path = require('path')
 
 module.exports = {
-  commonPath: process.env.COMMON_PATH,
-  common: (file) => path.resolve(process.cwd(), process.env.COMMON_PATH, file),
   port: process.env.PORT,
   content: {
     thumbDir: process.env.CONTENT_THUMB_DIR,

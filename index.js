@@ -2,8 +2,8 @@ const dotenv = require('dotenv')
 dotenv.config({ path: './config/.env' })
 const config = require('./config')
 
-const MongoDBService = require(config.common('./services/MongoDBService'))
-// const QueueService = require(config.common('./services/QueueService'))
+const MongoDBService = require('../photos-common/services/MongoDBService')
+// const QueueService = require('../photos-common/services/QueueService')
 let server = null
 
 async function init () {
@@ -13,7 +13,9 @@ async function init () {
   const app = require('./app')
   server = app.listen(config.port, () => {
     console.log('Server started')
-    process.send = process.send || function () {}
+
+    // Process start signal
+    process.send = process.send || (() => {})
     process.send('ready')
   })
 }
