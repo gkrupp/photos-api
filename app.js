@@ -9,11 +9,7 @@ const app = express()
 app.use(helmet())
 app.use(cors({
   origin: (origin, callback) => {
-    if (['https://photos.gkrupp.hu', 'http://localhost:6001'].indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
+    callback(null, ['https://photos.gkrupp.hu', 'http://localhost:6001'].includes(origin))
   }
 }))
 
