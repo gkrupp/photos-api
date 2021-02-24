@@ -79,10 +79,17 @@ components:
         default: 60
         maximum: 60
   responses:
-    photo:
-      description: Photo
+    PhotoFile:
+      description: PhotoFile
       content:
         image/*:
+          schema:
+            type: string
+            format: binary
+    AlbumFile:
+      description: AlbumFile
+      content:
+        application/zip:
           schema:
             type: string
             format: binary
@@ -103,7 +110,7 @@ paths:
     get:
       tags:
         - content
-      summary: Serve photo by ID
+      summary: Serves photo by ID
       description: Serves a photo file referenced by its ID
       operationId: contentPhotoId
       parameters:
@@ -111,11 +118,28 @@ paths:
       - $ref: '#/components/parameters/photoSize'
       responses:
         200:
-          $ref: '#/components/responses/photo'
+          $ref: '#/components/responses/PhotoFile'
         400:
           description: Malformed {photoId}
         404:
           description: Photo not found
+  
+  /content/album/{id}:
+    get:
+      tags:
+        - content
+      summary: Serves album content by ID
+      description: Serves the zipped content of an album referenced by its ID
+      operationId: contentAlbumId
+      parameters:
+      - $ref: '#/components/parameters/albumId'
+      responses:
+        200:
+          $ref: '#/components/responses/AlbumFile'
+        400:
+          description: Malformed {albumId}
+        404:
+          description: Album not found
 
 
   /photo/{id}:

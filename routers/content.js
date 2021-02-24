@@ -1,8 +1,9 @@
 const fs = require('fs')
 const router = require('express').Router()
 const MongoDBService = require('../../photos-common/services/MongoDBService')
-// const Album = require('../../photos-common/models/album')
+const Album = require('../../photos-common/models/album')
 const Photo = require('../../photos-common/models/photo')
+const albumDB = new Album(MongoDBService.colls.albums)
 const photoDB = new Photo(MongoDBService.colls.photos)
 
 require('express-async-errors')
@@ -14,9 +15,28 @@ router.use(cacheControl({
   noTransform: true
 }))
 
+router.get('/album/:id', async (req, res) => {
+  const id = req.params.id
+  if (!Album.validateId(id)) {
+    return res.status(400).end()
+  }
+  // get arhive
+  const serve = await albumDB.getServedFromId(id)
+  // test dir
+  if (!serve) return res.status(404).end()
+  // stat
+  albumDB.updateEventStat(id, 'served')
+  // serve
+  res.header('Content-Type', 'application/zip')
+  res.header('Content-Disposition', `attachment; filename="${serve.fileName}.zip"`)
+  res.status(200)
+  serve.archive.pipe(res)
+  await serve.archive.finalize()
+})
+
 router.get('/photo/:id', async (req, res) => {
   const id = req.params.id
-  if (typeof id !== 'string' || id.length !== 128) {
+  if (!Photo.validateId(id)) {
     return res.status(400).end()
   }
   // get path
