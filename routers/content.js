@@ -40,7 +40,7 @@ router.get('/photo/:id', async (req, res) => {
     return res.status(400).end()
   }
   // get path
-  const size = (req.query.size || 'preview').toLowerCase()
+  const size = (req.query.size || 'h1200').toLowerCase()
   const serve = await photoDB.getServedFromId(id, size)
   // test tn
   if (!serve) return res.status(404).end()
