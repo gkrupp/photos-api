@@ -2,10 +2,6 @@ require('dotenv')
 
 module.exports = {
   port: process.env.PORT,
-  content: {
-    thumbDir: process.env.CONTENT_THUMB_DIR,
-    thumbTypes: process.env.CONTENT_THUMB_TYPES.split(',')
-  },
   proc: {
     host: process.env.PROC_HOST,
     queuePrefix: process.env.PROC_QUEUE_PREFIX,
