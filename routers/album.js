@@ -11,45 +11,43 @@ router.use(cacheControl({
   noCache: true
 }))
 
-function validateAlbumId (req, res, next) {
+router.get('/:id', async (req, res) => {
   if (!Album.validateId(req.params.id)) {
     return res.status(400).end()
-  } else {
-    next()
   }
-}
-
-router.get('/:id', validateAlbumId, async (req, res) => {
   // includeId
   const opt = {
     details: req.query.details,
     includeId: Boolean(req.query.includeId)
   }
   // details
-  const album = await albumDB.getItems({ id: req.params.id }, opt, { one: true })
+  const item = await albumDB.getItems({ id: req.params.id }, opt, { one: true })
   // ret
-  if (album) {
-    return res.status(200).json(album)
+  if (item) {
+    return res.status(200).json(item)
   } else {
     return res.status(404).json({})
   }
 })
 
-router.get('/in/:id', validateAlbumId, async (req, res) => {
+router.get('/in/:albumId', async (req, res) => {
+  if (!Album.validateId(req.params.albumId)) {
+    return res.status(400).end()
+  }
   // pagination
   const opt = {
     details: req.query.details,
     includeId: true,
-    sort: req.query.sort || 'name:1',
+    sort: req.query.sort || 'name:1', // sorting is different for albums and photos
     skip: parseInt(Number(req.query.skip || 0)),
     limit: Math.min(parseInt(Number(req.query.limit || 0)) || 120, 120)
   }
   // details
-  const items = await albumDB.getItems({ albumId: req.params.id }, opt, { one: false })
+  const items = await albumDB.getItems({ albumId: req.params.albumId }, opt, { one: false })
   // ret
   return res.status(200).json({
-    count: await albumDB.countChildItems(req.params.id),
-    ...opt,
+    count: await albumDB.countChildItems(req.params.albumId),
+    params: opt,
     items
   })
 })

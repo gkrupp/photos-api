@@ -4,9 +4,6 @@ const Album = require('../../photos-common/models/album')
 const Photo = require('../../photos-common/models/photo')
 const photoDB = new Photo(MongoDBService.colls.photos)
 
-const defaultDetails = 'minimal'
-const defaultProjection = 'apiMinimal'
-
 require('express-async-errors')
 
 const cacheControl = require('express-cache-controller')
@@ -16,45 +13,43 @@ router.use(cacheControl({
 }))
 
 router.get('/:id', async (req, res) => {
-  const id = req.params.id
-  if (!Photo.validateId(id)) {
+  if (!Photo.validateId(req.params.id)) {
     return res.status(400).end()
   }
   // includeId
-  const includeId = Boolean(req.query.includeId)
+  const opt = {
+    details: req.query.details,
+    includeId: Boolean(req.query.includeId)
+  }
   // details
-  const details = (req.query.details || defaultDetails).toLowerCase()
-  let projection = ['api', details[0].toUpperCase() + details.slice(1)].join('')
-  if (!(projection in Photo.projections)) projection = defaultProjection
-  const photo = await photoDB.findOne(id, Photo.projections[projection])
+  const item = await photoDB.getItems({ id: req.params.id }, opt, { one: true })
   // ret
-  if (photo) {
-    return res.status(200).json(Photo.publicTransform(photo, details, { includeId }))
+  if (item) {
+    return res.status(200).json(item)
   } else {
     return res.status(404).json({})
   }
 })
 
 router.get('/in/:albumId', async (req, res) => {
-  const albumId = req.params.albumId
-  if (!Album.validateId(albumId)) {
+  if (!Album.validateId(req.params.albumId)) {
     return res.status(400).end()
   }
   // pagination
-  const skip = parseInt(Number(req.query.skip || 0))
-  const limit = Math.min(parseInt(Number(req.query.limit || 0)) || 60, 60)
-  const sort = { created: 1 }
+  const opt = {
+    details: req.query.details,
+    includeId: true,
+    sort: req.query.sort || 'created:1', // sorting is different for albums and photos
+    skip: parseInt(Number(req.query.skip || 0)),
+    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 120, 120)
+  }
   // details
-  const details = (req.query.details || defaultDetails).toLowerCase()
-  let projection = ['api', details[0].toUpperCase() + details.slice(1)].join('')
-  if (!(projection in Photo.projections)) projection = defaultProjection
-  const cursor = await photoDB.find({ albumId }, Photo.projections[projection], { sort, skip, limit, toArray: false, count: false })
+  const items = await photoDB.getItems({ albumId: req.params.albumId }, opt, { one: false })
   // ret
   return res.status(200).json({
-    count: await cursor.count(),
-    skip,
-    limit,
-    items: (await cursor.toArray()).map((item) => Photo.publicTransform(item, details))
+    count: await photoDB.countChildItems(req.params.albumId),
+    params: opt,
+    items
   })
 })
 
