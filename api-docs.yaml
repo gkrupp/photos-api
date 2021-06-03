@@ -4,7 +4,7 @@ info:
   description: 'photos.gkrupp.hu'
   version: '0.1.0'
 servers:
-  - url: https://api.photos.gkrupp.hu
+  - url: https://photos-api.gkrupp.hu
 
 
 components:
@@ -18,20 +18,6 @@ components:
         type: string
         minLength: 128
         maxLength: 128
-    photoSize:
-      name: size
-      in: query
-      required: false
-      description: Photo size
-      schema:
-        type: string
-        default: preview
-        enum:
-          - original
-          - preview
-          - tile
-          - largeicon
-          - icon
     albumId:
       name: albumId
       in: path
@@ -41,6 +27,15 @@ components:
         type: string
         minLength: 64
         maxLength: 64
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: Unique identifier of a user
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 32
     includeId:
       name: includeId
       in: query
@@ -56,11 +51,59 @@ components:
       description: Metadata details
       schema:
         type: string
-        default: basic
+        default: default
         enum:
           - minimal
-          - basic
+          - default
           - all
+    width:
+      name: width
+      in: query
+      required: false
+      description: Photo width
+      schema:
+        type: number
+        default: 1600
+    height:
+      name: height
+      in: query
+      required: false
+      description: Photo height
+      schema:
+        type: number
+        default: 1200
+    fit:
+      name: fit
+      in: query
+      required: false
+      description: Photo resize fit schema
+      schema:
+        type: string
+        default: cover
+        enum:
+          - cover
+          - contain
+          - fill
+          - inside
+          - outside
+    position:
+      name: position
+      in: query
+      required: false
+      description: Photo resize crop positioning schema
+      schema:
+        type: string
+        default: center
+        enum:
+          - center
+          - top
+          - right top
+          - right
+          - right bottom
+          - bottom
+          - left bottom
+          - left
+          - left top
     skip:
       name: skip
       in: query
@@ -69,15 +112,24 @@ components:
       schema:
         type: number
         default: 0
-    limit:
+    albumlimit:
       name: limit
       in: query
       required: false
       description: Pagination limit
       schema:
         type: number
-        default: 60
-        maximum: 60
+        default: 100
+        maximum: 200
+    photolimit:
+      name: limit
+      in: query
+      required: false
+      description: Pagination limit
+      schema:
+        type: number
+        default: 100
+        maximum: 200
   responses:
     PhotoFile:
       description: PhotoFile
@@ -97,15 +149,20 @@ components:
 
 tags:
   - name: content
-    description: Static Content Provider
+    description: Content API
   - name: photo
-    description: Photo API
+    description: Photo Meta API
   - name: album
-    description: Album API
+    description: Album Meta API
+  - name: user
+    description: User Meta API
+  - name: view
+    description: View API
 
 
 paths:
 
+  
   /content/photo/{id}:
     get:
       tags:
@@ -115,7 +172,10 @@ paths:
       operationId: contentPhotoId
       parameters:
       - $ref: '#/components/parameters/photoId'
-      - $ref: '#/components/parameters/photoSize'
+      - $ref: '#/components/parameters/width'
+      - $ref: '#/components/parameters/height'
+      - $ref: '#/components/parameters/fit'
+      - $ref: '#/components/parameters/position'
       responses:
         200:
           $ref: '#/components/responses/PhotoFile'
@@ -165,14 +225,14 @@ paths:
     get:
       tags:
         - photo
-      summary: Photos metadata by album
+      summary: Photos metadata by parent album
       description: Returns photos' metadata referenced by their {albumId}
       operationId: photosByAlbumId
       parameters:
       - $ref: '#/components/parameters/albumId'
       - $ref: '#/components/parameters/details'
       - $ref: '#/components/parameters/skip'
-      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/photolimit'
       responses:
         200:
           description: Array of Photo object
@@ -203,16 +263,56 @@ paths:
     get:
       tags:
         - album
-      summary: Albums metadata by album
+      summary: Albums metadata by parent album
       description: Returns albums' metadata referenced by their {albumId}
       operationId: albumsByAlbumId
       parameters:
       - $ref: '#/components/parameters/albumId'
       - $ref: '#/components/parameters/details'
       - $ref: '#/components/parameters/skip'
-      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/albumlimit'
       responses:
         200:
           description: Array of Album object
         400:
           description: Malformed {albumId}
+  
+  
+  /user/{userId}:
+    get:
+      tags:
+        - user
+      summary: User metadata by ID
+      description: Returns an user's metadata referenced by its ID
+      operationId: userId
+      parameters:
+      - $ref: '#/components/parameters/userId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/includeId'
+      responses:
+        200:
+          description: User object
+        400:
+          description: Malformed {userId}
+        404:
+          description: User not found
+  
+  
+  /view/album/{albumId}:
+    get:
+      tags:
+        - view
+      summary: Combined album view by ID
+      description: Returns albums, photos and users in an album
+      operationId: viewAlbum
+      parameters:
+      - $ref: '#/components/parameters/albumId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/skip'
+      responses:
+        200:
+          description: Combined {albums,photos,users} object
+        400:
+          description: Malformed {albumId}
+        404:
+          description: Album not found

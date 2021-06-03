@@ -40,7 +40,7 @@ router.get('/in/:albumId', async (req, res) => {
     includeId: true,
     sort: req.query.sort || 'name:1', // sorting is different for albums and photos
     skip: parseInt(Number(req.query.skip || 0)),
-    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 120, 120)
+    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 200, 200)
   }
   // details
   const items = await albumDB.getItems({ albumId: req.params.albumId }, opt, { one: false })

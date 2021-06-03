@@ -18,7 +18,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "prettier": "^2.2.1",
-    "prettier-standard": "^16.4.1",
+    "prettier-standard": "^15.0.1",
     "swagger-ui-express": "^4.1.6",
     "yamljs": "^0.3.0"
   },
@@ -29,6 +29,7 @@
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
     "express-cache-controller": "^1.1.0",
-    "helmet": "^4.4.1"
+    "helmet": "^4.4.1",
+    "sharp": "^0.28.2"
   }
 }

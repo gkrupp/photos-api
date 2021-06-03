@@ -32,8 +32,16 @@ const routerPhoto = require('./routers/photo')
 app.use('/photo', routerPhoto)
 
 // /album
-const albumPhoto = require('./routers/album')
-app.use('/album', albumPhoto)
+const routerAlbum = require('./routers/album')
+app.use('/album', routerAlbum)
+
+// /user
+const routerUser = require('./routers/user')
+app.use('/user', routerUser)
+
+// /view
+const routerView = require('./routers/view')
+app.use('/view', routerView)
 
 // unknown path
 app.use(async (req, res) => {
