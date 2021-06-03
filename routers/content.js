@@ -1,3 +1,4 @@
+const config = require('../config')
 const fs = require('fs')
 const pathlib = require('path')
 const router = require('express').Router()
@@ -9,7 +10,11 @@ const photoDB = new Photo(MongoDBService.colls.photos)
 const sharp = require('sharp')
 
 const FileCacheService = require('../../photos-common/services/FileCacheService')
-const FileCache = new FileCacheService({ levels: 3, expire: 7 * 24 * 60 * 60 * 1000 })
+const FileCache = new FileCacheService({
+  root: config.api.tnCache,
+  levels: 3,
+  expire: 7 * 24 * 60 * 60 * 1000
+})
 
 require('express-async-errors')
 

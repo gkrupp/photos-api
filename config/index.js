@@ -1,7 +1,11 @@
 require('dotenv')
+const pathlib = require('path')
 
 module.exports = {
   port: process.env.PORT,
+  api: {
+    tnCache: pathlib.join(process.env.CACHE_LOCATION, 'thumbnails')
+  },
   proc: {
     host: process.env.PROC_HOST,
     queuePrefix: process.env.PROC_QUEUE_PREFIX,

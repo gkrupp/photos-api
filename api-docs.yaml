@@ -303,7 +303,7 @@ paths:
       tags:
         - view
       summary: Combined album view by ID
-      description: Returns albums, photos and users in an album
+      description: Returns {albums,photos,users} in an album
       operationId: viewAlbum
       parameters:
       - $ref: '#/components/parameters/albumId'
