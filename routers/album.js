@@ -1,7 +1,9 @@
 const router = require('express').Router()
 const MongoDBService = require('../../photos-common/services/MongoDBService')
 const Album = require('../../photos-common/models/album')
+const Photo = require('../../photos-common/models/photo')
 const albumDB = new Album(MongoDBService.colls.albums)
+const photoDB = new Photo(MongoDBService.colls.photos)
 
 require('express-async-errors')
 
@@ -50,6 +52,26 @@ router.get('/in/:albumId', async (req, res) => {
     params: opt,
     items
   })
+})
+
+router.get('/size/:albumId', async (req, res) => {
+  if (!Album.validateId(req.params.albumId)) {
+    return res.status(400).end()
+  }
+  // size
+  const pathPrefix = await albumDB.findOne(req.params.albumId, Photo.projections.path({ includeId: false }))
+  if (pathPrefix === null) {
+    return res.status(404).json({})
+  }
+  const size = await photoDB.getPathPrefixSize(pathPrefix.path)
+  // ret
+  if (size) {
+    const ret = { size }
+    if (req.query.includeId) ret.id = req.params.albumId
+    return res.status(200).json(ret)
+  } else {
+    return res.status(404).json({})
+  }
 })
 
 module.exports = router

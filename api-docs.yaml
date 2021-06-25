@@ -277,6 +277,23 @@ paths:
         400:
           description: Malformed {albumId}
   
+  /album/size/{albumId}:
+    get:
+      tags:
+        - album
+      summary: Album content size by its ID
+      description: Returns an album's recursive size referenced by its {albumId}
+      operationId: albumSizeByAlbumId
+      parameters:
+      - $ref: '#/components/parameters/includeId'
+      responses:
+        200:
+          description: Size of the album
+        400:
+          description: Malformed {albumId}
+        404:
+          description: Album not found
+  
   
   /user/{userId}:
     get:
