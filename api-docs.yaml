@@ -57,7 +57,7 @@ components:
           - default
           - all
     width:
-      name: width
+      name: w
       in: query
       required: false
       description: Photo width
@@ -65,7 +65,7 @@ components:
         type: number
         default: 1600
     height:
-      name: height
+      name: h
       in: query
       required: false
       description: Photo height
@@ -73,7 +73,7 @@ components:
         type: number
         default: 1200
     fit:
-      name: fit
+      name: f
       in: query
       required: false
       description: Photo resize fit schema
@@ -87,7 +87,7 @@ components:
           - inside
           - outside
     position:
-      name: position
+      name: p
       in: query
       required: false
       description: Photo resize crop positioning schema
@@ -176,6 +176,23 @@ paths:
       - $ref: '#/components/parameters/height'
       - $ref: '#/components/parameters/fit'
       - $ref: '#/components/parameters/position'
+      responses:
+        200:
+          $ref: '#/components/responses/PhotoFile'
+        400:
+          description: Malformed {photoId}
+        404:
+          description: Photo not found
+  
+  /content/photo/original/{id}:
+    get:
+      tags:
+        - content
+      summary: Serves photo by ID
+      description: Serves a photo file referenced by its ID
+      operationId: contentOriginalPhotoId
+      parameters:
+      - $ref: '#/components/parameters/photoId'
       responses:
         200:
           $ref: '#/components/responses/PhotoFile'

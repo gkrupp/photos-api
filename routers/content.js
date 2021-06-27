@@ -50,11 +50,11 @@ router.get('/photo/:id', async (req, res) => {
     return res.status(400).end()
   }
   // defopts
-  const fits = ['cover', 'contain', 'fill', 'outside']
+  const fits = ['cover', 'contain', 'fill', 'inside', 'outside']
   const positions = ['center', 'top', 'right top', 'right', 'right bottom', 'bottom', 'left bottom', 'left', 'left top']
   // params
-  const width = Math.min(Math.round(Number(req.query.w) || (Number(req.query.h) || 1200) * 4 / 3), 1600)
-  const height = Math.min(Math.round(Number(req.query.h) || (Number(req.query.w) || 1600) * 3 / 4), 1200)
+  const width = Math.min(Math.round(Number(req.query.w) || Number(req.query.h) || 1200), 1600)
+  const height = Math.min(Math.round(Number(req.query.h) || Number(req.query.w) || 1200), 1600)
   const fit = fits.includes(req.query.f) ? req.query.f : fits[0]
   const position = positions.includes(req.query.p) ? req.query.p : positions[0]
   //
@@ -131,6 +131,21 @@ router.get('/photo/:id', async (req, res) => {
   // serve
   photoDB.updateEventStat(id, 'served', cacheTag)
   res.send(imgBuff)
+})
+
+router.get('/photo/original/:id', async (req, res) => {
+  const id = req.params.id
+  if (!Photo.validateId(id)) {
+    return res.status(400).end()
+  }
+  // lookup
+  const serve = await photoDB.findOne(id, Photo.projections.serve({ includeId: false }))
+  if (!serve) return res.status(404).end()
+  // stat
+  photoDB.updateEventStat(id, 'served', 'original')
+  // serve
+  res.header('Content-Disposition', `inline; filename="${serve.fileName}"`)
+  res.status(200).sendFile(serve.path)
 })
 
 module.exports = router
