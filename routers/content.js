@@ -5,6 +5,7 @@ const router = require('express').Router()
 const MongoDBService = require('../../photos-common/services/MongoDBService')
 const Album = require('../../photos-common/models/album')
 const Photo = require('../../photos-common/models/photo')
+const User = require('../../photos-common/models/user')
 const albumDB = new Album(MongoDBService.colls.albums)
 const photoDB = new Photo(MongoDBService.colls.photos)
 const sharp = require('sharp')
@@ -146,6 +147,17 @@ router.get('/photo/original/:id', async (req, res) => {
   // serve
   res.header('Content-Disposition', `inline; filename="${serve.fileName}"`)
   res.status(200).sendFile(serve.path)
+})
+
+router.get('/user/photo/:id', async (req, res) => {
+  const id = req.params.id
+  if (!User.validateId(id)) {
+    return res.status(400).end()
+  }
+  // lookup
+  const path = pathlib.join(config.api.profilePictures, `${id}.jpg`)
+  // serve
+  res.sendFile(path)
 })
 
 module.exports = router

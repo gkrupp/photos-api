@@ -217,6 +217,23 @@ paths:
           description: Malformed {albumId}
         404:
           description: Album not found
+  
+  /content/user/photo/{id}:
+    get:
+      tags:
+        - content
+      summary: Serves user profile photo by ID
+      description: Serves the user's profile photo referenced by the user's ID
+      operationId: contentUserPhotoId
+      parameters:
+      - $ref: '#/components/parameters/userId'
+      responses:
+        200:
+          $ref: '#/components/responses/PhotoFile'
+        400:
+          description: Malformed {userId}
+        404:
+          description: User photo not found
 
 
   /photo/{id}:

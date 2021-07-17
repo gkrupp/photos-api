@@ -4,7 +4,8 @@ const pathlib = require('path')
 module.exports = {
   port: process.env.PORT,
   api: {
-    tnCache: pathlib.join(process.env.CACHE_LOCATION, 'thumbnails')
+    tnCache: pathlib.join(process.env.CACHE_LOCATION, 'thumbnails'),
+    profilePictures: process.env.PROFILE_PICTURES_LOCATION
   },
   proc: {
     host: process.env.PROC_HOST,
