@@ -70,7 +70,7 @@ router.get('/album/:albumId', async (req, res) => {
       items: photoItems
     },
     users: {
-      count: userIds.size,
+      count: userIds.length,
       params: userOpt,
       items: userItems
     }
