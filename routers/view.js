@@ -19,6 +19,7 @@ router.get('/album/:albumId', async (req, res) => {
   if (!Album.validateId(req.params.albumId)) {
     return res.status(400).end()
   }
+  const albumId = req.params.albumId
   // pagination
   const details = req.query.details || 'default'
   const albumOpt = {
@@ -43,9 +44,9 @@ router.get('/album/:albumId', async (req, res) => {
     limit: Math.min(parseInt(Number(req.query.limit || 0)) || 200, 200)
   }
   // details
-  const album = await albumDB.getItems({ id: req.params.albumId }, { details: 'all', includeId: true }, { one: true })
-  const albumItems = await albumDB.getItems({ albumId: req.params.albumId }, albumOpt, { one: false })
-  const photoItems = await photoDB.getItems({ albumId: req.params.albumId }, photoOpt, { one: false })
+  const album = await albumDB.getItems({ id: albumId }, { details: 'all', includeId: true }, { one: true })
+  const albumItems = await albumDB.getItems({ albumId }, albumOpt, { one: false })
+  const photoItems = await photoDB.getItems({ albumId }, photoOpt, { one: false })
   // users
   const userIdSet = new Set()
   albumItems.forEach(item => item.userId ? userIdSet.add(item.userId) : null)
@@ -53,19 +54,21 @@ router.get('/album/:albumId', async (req, res) => {
   const userIds = Array.from(userIdSet.values())
   const userItems = await userDB.getItems({ id: { $in: userIds } }, userOpt, { one: false })
   // size
-  const pathPrefix = await albumDB.findOne(req.params.albumId, Photo.projections.path({ includeId: false }))
+  const pathPrefix = await albumDB.findOne(albumId, Photo.projections.path({ includeId: false }))
   const albumSize = pathPrefix ? (await photoDB.getPathPrefixSize(pathPrefix.path)) : null
+  // stat
+  albumDB.updateEventStat(albumId, 'viewed')
   // ret
   return res.status(200).json({
     album,
     albumSize,
     albums: {
-      count: await albumDB.countChildItems(req.params.albumId),
+      count: await albumDB.countChildItems(albumId),
       params: albumOpt,
       items: albumItems
     },
     photos: {
-      count: await photoDB.countChildItems(req.params.albumId),
+      count: await photoDB.countChildItems(albumId),
       params: photoOpt,
       items: photoItems
     },
