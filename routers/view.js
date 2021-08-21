@@ -55,13 +55,13 @@ router.get('/album/:albumId', async (req, res) => {
   const userItems = await userDB.getItems({ id: { $in: userIds } }, userOpt, { one: false })
   // size
   const pathPrefix = await albumDB.findOne(albumId, Photo.projections.path({ includeId: false }))
-  const albumSize = pathPrefix ? (await photoDB.getPathPrefixSize(pathPrefix.path)) : null
+  const albumInfo = pathPrefix ? (await photoDB.getPathPrefixInfo(pathPrefix.path)) : null
   // stat
   albumDB.updateEventStat(albumId, 'viewed')
   // ret
   return res.status(200).json({
     album,
-    albumSize,
+    albumInfo,
     albums: {
       count: await albumDB.countChildItems(albumId),
       params: albumOpt,
