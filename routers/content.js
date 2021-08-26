@@ -39,7 +39,7 @@ router.get('/album/:id', async (req, res) => {
   albumDB.updateEventStat(id, 'served')
   // serve
   res.header('Content-Type', 'application/zip')
-  res.header('Content-Disposition', `attachment; filename="${serve.fileName}.zip"`)
+  res.header('Content-Disposition', `attachment; filename="${serve.name}.zip"`)
   res.status(200)
   serve.archive.pipe(res)
   await serve.archive.finalize()
@@ -84,7 +84,7 @@ router.get('/photo/:id', async (req, res) => {
   const serve = await photoDB.findOne(id, Photo.projections.serve({ includeId: false }))
   if (!serve) return res.status(404).end()
   // headers
-  res.header('Content-Disposition', `inline; filename="${serve.fileName}"`)
+  res.header('Content-Disposition', `inline; filename="${serve.name}"`)
   res.contentType(`image/${opt.format.type}`)
   // cache tag
   const cacheTag = ((f, w, h, W, H, p) => {
@@ -145,7 +145,7 @@ router.get('/photo/original/:id', async (req, res) => {
   // stat
   photoDB.updateEventStat(id, 'served', 'original')
   // serve
-  res.header('Content-Disposition', `inline; filename="${serve.fileName}"`)
+  res.header('Content-Disposition', `inline; filename="${serve.name}"`)
   res.status(200).sendFile(serve.path)
 })
 
