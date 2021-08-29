@@ -54,10 +54,18 @@ router.get('/photo/:id', async (req, res) => {
   const fits = ['cover', 'contain', 'fill', 'inside', 'outside']
   const positions = ['center', 'top', 'right top', 'right', 'right bottom', 'bottom', 'left bottom', 'left', 'left top']
   // params
-  const width = Math.min(Math.round(Number(req.query.w) || Number(req.query.h) || 1200), 1600)
-  const height = Math.min(Math.round(Number(req.query.h) || Number(req.query.w) || 1200), 1600)
+  let width = Math.min(Math.round(Math.abs(parseInt(req.query.w))), 3840) || undefined
+  let height = Math.min(Math.round(Math.abs(parseInt(req.query.h))), 2160) || undefined
   const fit = fits.includes(req.query.f) ? req.query.f : fits[0]
   const position = positions.includes(req.query.p) ? req.query.p : positions[0]
+  // const quality = 80 // Math.max(10, Math.min(parseInt(req.query.q) || 80, 100))
+  // const progressive = !(['false', '0', 'off', ''].includes(req.query.r))
+  // const sharpen = !(['false', '0', 'off', ''].includes(req.query.s)) && Math.min(width || 0, height || 0) <= 480
+  //
+  if (width === undefined && height === undefined) {
+    width = 1200
+    height = 900
+  }
   //
   const opt = {
     resize: {
@@ -69,7 +77,7 @@ router.get('/photo/:id', async (req, res) => {
       withoutEnlargement: true,
       fastShrinkOnLoad: true
     },
-    sharpen: Math.min(width, height) <= 480,
+    sharpen: Math.min(width || 0, height || 0) <= 480,
     format: {
       type: 'jpeg', // req.headers.accept.includes('image/webp') ? 'webp' : 'jpeg',
       options: {
@@ -88,6 +96,8 @@ router.get('/photo/:id', async (req, res) => {
   res.contentType(`image/${opt.format.type}`)
   // cache tag
   const cacheTag = ((f, w, h, W, H, p) => {
+    if (w === undefined) w = Math.round(h / H * W)
+    if (h === undefined) h = Math.round(w / W * H)
     const wr = Math.round(h / H * W)
     const hr = Math.round(w / W * H)
     let wf = w
@@ -101,6 +111,7 @@ router.get('/photo/:id', async (req, res) => {
     }
     return ['f', fits.indexOf(f), 'w', wf, 'h', hf, 'p', positions.indexOf(p)].join('')
   })(fit, width, height, serve.width, serve.height, position)
+  console.log(width, height, cacheTag)
   // cache
   const cachedName = [id, cacheTag, 'jpg'].join('.')
   if (await FileCache.exists(cachedName)) {
