@@ -2,30 +2,22 @@ const config = require('../config')
 const fs = require('fs')
 const pathlib = require('path')
 const router = require('express').Router()
+
 const MongoDBService = require('../../photos-common/services/MongoDBService')
-const Album = require('../../photos-common/models/album')
-const Photo = require('../../photos-common/models/photo')
-const User = require('../../photos-common/models/user')
-const albumDB = new Album(MongoDBService.colls.albums)
-const photoDB = new Photo(MongoDBService.colls.photos)
+const Album = require('../../photos-common/models/album2')
+const Photo = require('../../photos-common/models/photo2')
+const User = require('../../photos-common/models/user2')
+Album.init({ coll: MongoDBService.colls.albums })
+Photo.init({ coll: MongoDBService.colls.photos })
+User.init({ coll: MongoDBService.colls.users })
+
 const sharp = require('sharp')
 
 const FileCacheService = require('../../photos-common/services/FileCacheService')
-const FileCache = new FileCacheService({
-  root: config.api.tnCache,
-  levels: 3,
-  expire: 7 * 24 * 60 * 60 * 1000
-})
+const FileCache = new FileCacheService(config.caches.thumbnail)
 
 require('express-async-errors')
-
-const cacheControl = require('express-cache-controller')
-router.use(cacheControl({
-  private: true,
-  maxAge: 24 * 60 * 60,
-  noTransform: true
-}))
-
+/*
 router.get('/album/:id', async (req, res) => {
   const id = req.params.id
   if (!Album.validateId(id)) {
@@ -44,7 +36,7 @@ router.get('/album/:id', async (req, res) => {
   serve.archive.pipe(res)
   await serve.archive.finalize()
 })
-
+*/
 router.get('/photo/:id', async (req, res) => {
   const id = req.params.id
   if (!Photo.validateId(id)) {
@@ -89,7 +81,7 @@ router.get('/photo/:id', async (req, res) => {
   // perf:start
   const t1 = Date.now()
   // lookup
-  const serve = await photoDB.findOne(id, Photo.projections.serve({ includeId: false }))
+  const serve = await Photo.findOne(id, Photo.projections.serve({ includeId: false }))
   if (!serve) return res.status(404).end()
   // headers
   res.header('Content-Disposition', `inline; filename="${serve.name}"`)
@@ -118,8 +110,8 @@ router.get('/photo/:id', async (req, res) => {
     if (process.env.NODE_ENV !== 'production') {
       const t2 = Date.now(); console.log('cached', t2 - t1, cacheTag, id)
     }
-    photoDB.updateEventStat(id, 'cached', cacheTag)
-    photoDB.updateEventStat(id, 'served', cacheTag)
+//    photoDB.updateEventStat(id, 'cached', cacheTag)
+//    photoDB.updateEventStat(id, 'served', cacheTag)
     return res.sendFile(await FileCache.locate(cachedName))
   }
   // load
@@ -136,25 +128,25 @@ router.get('/photo/:id', async (req, res) => {
     .toBuffer()
   // store
   FileCache.createFile(cachedName, imgBuff)
-  photoDB.updateEventStat(id, 'resized', cacheTag)
+//  photoDB.updateEventStat(id, 'resized', cacheTag)
   if (process.env.NODE_ENV !== 'production') {
     const t2 = Date.now(); console.log('resize', t2 - t1, cacheTag, id)
   }
   // serve
-  photoDB.updateEventStat(id, 'served', cacheTag)
+//  photoDB.updateEventStat(id, 'served', cacheTag)
   res.send(imgBuff)
 })
 
-router.get('/photo/original/:id', async (req, res) => {
+router.get('/photo/:id/original', async (req, res) => {
   const id = req.params.id
   if (!Photo.validateId(id)) {
     return res.status(400).end()
   }
   // lookup
-  const serve = await photoDB.findOne(id, Photo.projections.serve({ includeId: false }))
+  const serve = await Photo.findOne(id, Photo.projections.serve({ includeId: false }))
   if (!serve) return res.status(404).end()
   // stat
-  photoDB.updateEventStat(id, 'served', 'original')
+//  Photo.updateEventStat(id, 'served', 'original')
   // serve
   res.header('Content-Disposition', `inline; filename="${serve.name}"`)
   res.status(200).sendFile(serve.path)

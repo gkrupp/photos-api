@@ -1,56 +1,29 @@
 const router = require('express').Router()
 const MongoDBService = require('../../photos-common/services/MongoDBService')
-const Album = require('../../photos-common/models/album')
-const Photo = require('../../photos-common/models/photo')
-const photoDB = new Photo(MongoDBService.colls.photos)
+const Photo = require('../../photos-common/models/photo2')
+Photo.init({ coll: MongoDBService.colls.photos })
 
 require('express-async-errors')
-
-const cacheControl = require('express-cache-controller')
-router.use(cacheControl({
-  private: true,
-  noCache: true
-}))
 
 router.get('/:id', async (req, res) => {
   if (!Photo.validateId(req.params.id)) {
     return res.status(400).end()
   }
-  // includeId
-  const opt = {
-    details: req.query.details,
+  // get
+  const aggrOpts = {
     includeId: Boolean(req.query.includeId)
   }
-  // details
-  const item = await photoDB.getItems({ id: req.params.id }, opt, { one: true })
-  // ret
-  if (item) {
-    return res.status(200).json(item)
-  } else {
-    return res.status(404).json({})
+  try {
+    const item = await Photo.apiGet(req.params.id, req.query.details, aggrOpts, { one: true })
+    // ret
+    if (item) {
+      return res.status(200).json(item)
+    } else {
+      return res.status(404).json({})
+    }
+  } catch (err) {
+    return res.status(400).json({})
   }
-})
-
-router.get('/in/:albumId', async (req, res) => {
-  if (!Album.validateId(req.params.albumId)) {
-    return res.status(400).end()
-  }
-  // pagination
-  const opt = {
-    details: req.query.details,
-    includeId: true,
-    sort: req.query.sort || 'created:1', // sorting is different for albums and photos
-    skip: parseInt(Number(req.query.skip || 0)),
-    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 120, 120)
-  }
-  // details
-  const items = await photoDB.getItems({ albumId: req.params.albumId }, opt, { one: false })
-  // ret
-  return res.status(200).json({
-    count: await photoDB.countChildItems(req.params.albumId),
-    params: opt,
-    items
-  })
 })
 
 module.exports = router

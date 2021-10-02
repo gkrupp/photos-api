@@ -1,6 +1,8 @@
+
 const express = require('express')
 const helmet = require('helmet')
 const cors = require('cors')
+const cacheControl = require('express-cache-controller')
 
 // application
 const app = express()
@@ -11,6 +13,10 @@ app.use(cors({
   origin: (origin, callback) => {
     callback(null, ['https://photos.gkrupp.hu', 'http://localhost:6001'].includes(origin))
   }
+}))
+app.use(cacheControl({
+  private: true,
+  noCache: true
 }))
 
 // /api-docs
@@ -24,24 +30,20 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // /content
-const routerContent = require('./routers/content')
-app.use('/content', routerContent)
+app.use('/content', require('./routers/content'))
 
 // /photo
-const routerPhoto = require('./routers/photo')
-app.use('/photo', routerPhoto)
+app.use('/photo', require('./routers/photo'))
 
 // /album
-const routerAlbum = require('./routers/album')
-app.use('/album', routerAlbum)
+app.use('/album', require('./routers/album'))
 
 // /user
-const routerUser = require('./routers/user')
-app.use('/user', routerUser)
+app.use('/user', require('./routers/user'))
 
 // /view
-const routerView = require('./routers/view')
-app.use('/view', routerView)
+// const routerView = require('./routers/view')
+// app.use('/view', routerView)
 
 // unknown path
 app.use(async (req, res) => {
