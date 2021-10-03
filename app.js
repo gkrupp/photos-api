@@ -30,20 +30,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // /content
-app.use('/content', require('./routers/content'))
+app.use('/content', require('./routers/content').$router)
 
 // /photo
-app.use('/photo', require('./routers/photo'))
+app.use('/photo', require('./routers/photo').$router)
 
 // /album
-app.use('/album', require('./routers/album'))
+app.use('/album', require('./routers/album').$router)
 
 // /user
-app.use('/user', require('./routers/user'))
+app.use('/user', require('./routers/user').$router)
 
 // /view
-// const routerView = require('./routers/view')
-// app.use('/view', routerView)
+app.use('/view', require('./routers/view').$router)
 
 // unknown path
 app.use(async (req, res) => {
@@ -52,7 +51,9 @@ app.use(async (req, res) => {
 
 // error handling
 app.use(async (err, req, res, next) => {
-  if (err.name === 'Error' && err.code === 'ENOENT') {
+  if (err.name === 'ApiError') {
+    return res.status(err.status).end()
+  } else if (err.name === 'Error' && err.code === 'ENOENT') {
     return res.status(404).end()
   } else {
     console.error(err, err.name, err.code)

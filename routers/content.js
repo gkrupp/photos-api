@@ -1,7 +1,7 @@
 const config = require('../config')
 const fs = require('fs')
 const pathlib = require('path')
-const router = require('express').Router()
+const $router = require('express').Router()
 
 const MongoDBService = require('../../photos-common/services/MongoDBService')
 const Album = require('../../photos-common/models/album2')
@@ -17,6 +17,8 @@ const FileCacheService = require('../../photos-common/services/FileCacheService'
 const FileCache = new FileCacheService(config.caches.thumbnail)
 
 require('express-async-errors')
+// const { ApiError } = require('../../photos-common/errors')
+
 /*
 router.get('/album/:id', async (req, res) => {
   const id = req.params.id
@@ -37,7 +39,7 @@ router.get('/album/:id', async (req, res) => {
   await serve.archive.finalize()
 })
 */
-router.get('/photo/:id', async (req, res) => {
+$router.get('/photo/:id', async (req, res) => {
   const id = req.params.id
   if (!Photo.validateId(id)) {
     return res.status(400).end()
@@ -103,15 +105,14 @@ router.get('/photo/:id', async (req, res) => {
     }
     return ['f', fits.indexOf(f), 'w', wf, 'h', hf, 'p', positions.indexOf(p)].join('')
   })(fit, width, height, serve.width, serve.height, position)
-  console.log(width, height, cacheTag)
   // cache
   const cachedName = [id, cacheTag, 'jpg'].join('.')
   if (await FileCache.exists(cachedName)) {
     if (process.env.NODE_ENV !== 'production') {
       const t2 = Date.now(); console.log('cached', t2 - t1, cacheTag, id)
     }
-//    photoDB.updateEventStat(id, 'cached', cacheTag)
-//    photoDB.updateEventStat(id, 'served', cacheTag)
+    //    photoDB.updateEventStat(id, 'cached', cacheTag)
+    //    photoDB.updateEventStat(id, 'served', cacheTag)
     return res.sendFile(await FileCache.locate(cachedName))
   }
   // load
@@ -128,16 +129,16 @@ router.get('/photo/:id', async (req, res) => {
     .toBuffer()
   // store
   FileCache.createFile(cachedName, imgBuff)
-//  photoDB.updateEventStat(id, 'resized', cacheTag)
+  //  photoDB.updateEventStat(id, 'resized', cacheTag)
   if (process.env.NODE_ENV !== 'production') {
     const t2 = Date.now(); console.log('resize', t2 - t1, cacheTag, id)
   }
   // serve
-//  photoDB.updateEventStat(id, 'served', cacheTag)
+  //  photoDB.updateEventStat(id, 'served', cacheTag)
   res.send(imgBuff)
 })
 
-router.get('/photo/:id/original', async (req, res) => {
+$router.get('/photo/:id/original', async (req, res) => {
   const id = req.params.id
   if (!Photo.validateId(id)) {
     return res.status(400).end()
@@ -146,13 +147,13 @@ router.get('/photo/:id/original', async (req, res) => {
   const serve = await Photo.findOne(id, Photo.projections.serve({ includeId: false }))
   if (!serve) return res.status(404).end()
   // stat
-//  Photo.updateEventStat(id, 'served', 'original')
+  //  Photo.updateEventStat(id, 'served', 'original')
   // serve
   res.header('Content-Disposition', `inline; filename="${serve.name}"`)
   res.status(200).sendFile(serve.path)
 })
 
-router.get('/user/photo/:id', async (req, res) => {
+$router.get('/user/photo/:id', async (req, res) => {
   const id = req.params.id
   if (!User.validateId(id)) {
     return res.status(400).end()
@@ -163,4 +164,6 @@ router.get('/user/photo/:id', async (req, res) => {
   res.sendFile(path)
 })
 
-module.exports = router
+module.exports = {
+  $router
+}

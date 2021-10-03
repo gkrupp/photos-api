@@ -1,29 +1,36 @@
-const router = require('express').Router()
+const $router = require('express').Router()
 const MongoDBService = require('../../photos-common/services/MongoDBService')
 const Photo = require('../../photos-common/models/photo2')
 Photo.init({ coll: MongoDBService.colls.photos })
 
 require('express-async-errors')
+const { ApiError } = require('../../photos-common/errors')
 
-router.get('/:id', async (req, res) => {
-  if (!Photo.validateId(req.params.id)) {
-    return res.status(400).end()
+async function getPhoto (id, details = 'default', { includeId = false } = {}) {
+  if (!Photo.validateId(id)) {
+    throw new ApiError({
+      status: 400,
+      message: 'Invalid \'photoId\'.'
+    })
   }
-  // get
-  const aggrOpts = {
+  const aggrOpts = { includeId }
+  const item = await Photo.apiGet(id, details, aggrOpts, { one: true })
+  if (!item) {
+    throw new ApiError({
+      status: 404,
+      message: 'Photo not found.'
+    })
+  }
+  return item
+}
+
+$router.get('/:id', async (req, res) => {
+  return res.json(await getPhoto(req.params.id, req.query.details || 'default', {
     includeId: Boolean(req.query.includeId)
-  }
-  try {
-    const item = await Photo.apiGet(req.params.id, req.query.details, aggrOpts, { one: true })
-    // ret
-    if (item) {
-      return res.status(200).json(item)
-    } else {
-      return res.status(404).json({})
-    }
-  } catch (err) {
-    return res.status(400).json({})
-  }
+  }))
 })
 
-module.exports = router
+module.exports = {
+  $router,
+  getPhoto
+}

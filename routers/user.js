@@ -1,30 +1,50 @@
-const router = require('express').Router()
+const $router = require('express').Router()
 
 const MongoDBService = require('../../photos-common/services/MongoDBService')
 const User = require('../../photos-common/models/user2')
 User.init({ coll: MongoDBService.colls.users })
 
 require('express-async-errors')
+const { ApiError } = require('../../photos-common/errors')
 
-router.get('/:id', async (req, res) => {
-  if (!User.validateId(req.params.id)) {
-    return res.status(400).end()
+async function getUser (id, details = 'default', { includeId = false } = {}) {
+  if (!User.validateId(id)) {
+    throw new ApiError({
+      status: 400,
+      message: 'Invalid \'userId\'.'
+    })
   }
-  // get
-  const aggrOpts = {
+  const aggrOpts = { includeId }
+  const item = await User.apiGet(id, details, aggrOpts, { one: true })
+  if (!item) {
+    throw new ApiError({
+      status: 404,
+      message: 'User not found.'
+    })
+  }
+  return item
+}
+
+async function getUsers (ids, details = 'default', { includeId = true, sort = undefined, skip = 0, limit = 20 }) {
+  if (!ids.every(id => User.validateId(id))) {
+    throw new ApiError({
+      status: 400,
+      message: 'Invalid \'userId\'.'
+    })
+  }
+  const aggrOpts = { includeId, sort, skip, limit }
+  const items = await User.apiGet({ id: { $in: ids } }, details, aggrOpts, { one: false })
+  return items
+}
+
+$router.get('/:id', async (req, res) => {
+  return res.json(await getUser(req.params.id, req.query.details || 'default', {
     includeId: Boolean(req.query.includeId)
-  }
-  try {
-    const item = await User.apiGet(req.params.id, req.query.details, aggrOpts, { one: true })
-    // ret
-    if (item) {
-      return res.status(200).json(item)
-    } else {
-      return res.status(404).json({})
-    }
-  } catch (err) {
-    return res.status(400).json({})
-  }
+  }))
 })
 
-module.exports = router
+module.exports = {
+  $router,
+  getUser,
+  getUsers
+}
