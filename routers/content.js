@@ -11,34 +11,65 @@ Album.init({ coll: MongoDBService.colls.albums })
 Photo.init({ coll: MongoDBService.colls.photos })
 User.init({ coll: MongoDBService.colls.users })
 
+const archiver = require('archiver')
 const sharp = require('sharp')
 
 const FileCacheService = require('../../photos-common/services/FileCacheService')
 const FileCache = new FileCacheService(config.caches.thumbnail)
 
 require('express-async-errors')
-// const { ApiError } = require('../../photos-common/errors')
+const { pathPrefixRegExp } = require('../../photos-common/utils')
+const { ApiError } = require('../../photos-common/errors')
 
-/*
-router.get('/album/:id', async (req, res) => {
+$router.get('/album/:id/zip', async (req, res) => {
   const id = req.params.id
   if (!Album.validateId(id)) {
-    return res.status(400).end()
+    throw new ApiError({
+      status: 400,
+      message: 'Invalid \'albumId\'.'
+    })
   }
-  // get arhive
-  const serve = await albumDB.getServedFromId(id)
-  // test dir
-  if (!serve) return res.status(404).end()
-  // stat
-  albumDB.updateEventStat(id, 'served')
-  // serve
-  res.header('Content-Type', 'application/zip')
-  res.header('Content-Disposition', `attachment; filename="${serve.name}.zip"`)
+  const album = await Album.findOne(id, Album.projections.serve({ includeId: false }))
+  if (!album) {
+    throw new ApiError({
+      status: 404,
+      message: 'Album not found.'
+    })
+  }
+  //
+  const archive = archiver('zip', {
+    statConcurrency: 4,
+    store: true
+  })
+  archive.on('warning', (err) => {
+    console.error(err)
+    throw err
+  })
+  archive.on('error', (err) => {
+    console.error(err)
+    throw err
+  })
   res.status(200)
-  serve.archive.pipe(res)
-  await serve.archive.finalize()
+  res.header('Content-Type', 'application/zip')
+  res.header('Content-Disposition', `attachment; filename="${album.name}.zip"`)
+  archive.pipe(res)
+  const limit = 256
+  let skip = 0
+  let files = []
+  do {
+    files = await Photo.find({ path: pathPrefixRegExp(album.path) }, Photo.projections.path({ includeId: true }), { limit, skip })
+    files.forEach(file => {
+      // photoDB.updateEventStat(id, 'served')
+      archive.file(file.path, {
+        name: file.path.substr(album.path.length)
+      })
+    })
+    skip += limit
+  } while (files?.length === limit)
+  // albumDB.updateEventStat(id, 'served')
+  archive.finalize()
 })
-*/
+
 $router.get('/photo/:id', async (req, res) => {
   const id = req.params.id
   if (!Photo.validateId(id)) {
