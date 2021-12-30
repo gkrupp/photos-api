@@ -17,7 +17,7 @@ async function getViewAlbum (id, details = 'default', {
   infoSize = true, infoSpan = true,
   albumSort = 'name:1', photoSort = 'created:1', userSort = undefined,
   albumSkip = 0, photoSkip = 0, userSkip = 0,
-  albumLimit = 200, photoLimit = 120, userLimit = 200
+  albumLimit = 10000, photoLimit = 10000, userLimit = 100
 } = {}) {
   if (!Album.validateId(id)) {
     throw new ApiError({
@@ -45,13 +45,13 @@ $router.get('/album/:albumId', async (req, res) => {
     includeId: true,
     albumSort: req.query.albumSort || 'name:1',
     albumSkip: parseInt(Number(req.query.albumSkip || 0)),
-    albumLimit: Math.min(parseInt(Number(req.query.albumLimit || 0)) || 200, 200),
+    albumLimit: Math.min(parseInt(Number(req.query.albumLimit || 0)) || 1000, 1000),
     photoSort: req.query.photoSort || 'created:1',
     photoSkip: parseInt(Number(req.query.photoSkip || 0)),
-    photoLimit: Math.min(parseInt(Number(req.query.photoLimit || 0)) || 120, 120),
+    photoLimit: Math.min(parseInt(Number(req.query.photoLimit || 0)) || 10000, 10000),
     userSort: req.query.userSort || undefined,
     userSkip: parseInt(Number(req.query.userSkip || 0)),
-    userLimit: Math.min(parseInt(Number(req.query.userLimit || 0)) || 20, 20),
+    userLimit: Math.min(parseInt(Number(req.query.userLimit || 0)) || 100, 100),
     infoSize: true,
     infoSpan: true
   }))

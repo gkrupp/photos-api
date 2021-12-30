@@ -25,7 +25,7 @@ async function getUser (id, details = 'default', { includeId = false } = {}) {
   return item
 }
 
-async function getUsers (ids, details = 'default', { includeId = true, sort = undefined, skip = 0, limit = 20 }) {
+async function getUsers (ids, details = 'default', { includeId = true, sort = undefined, skip = 0, limit = 100 }) {
   if (!ids.every(id => User.validateId(id))) {
     throw new ApiError({
       status: 400,

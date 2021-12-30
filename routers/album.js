@@ -32,7 +32,7 @@ async function getAlbum (id, details = 'default', { includeId = false } = {}) {
   return item
 }
 
-async function getAlbumAlbums (id, details = 'default', { includeId = true, sort = 'name:1', skip = 0, limit = 200 } = {}) {
+async function getAlbumAlbums (id, details = 'default', { includeId = true, sort = 'name:1', skip = 0, limit = 1000 } = {}) {
   if (!Album.validateId(id)) {
     throw new ApiError({
       status: 400,
@@ -48,7 +48,7 @@ async function getAlbumAlbums (id, details = 'default', { includeId = true, sort
   }
 }
 
-async function getAlbumPhotos (id, details = 'default', { includeId = true, sort = 'created:1', skip = 0, limit = 120 } = {}) {
+async function getAlbumPhotos (id, details = 'default', { includeId = true, sort = 'created:1', skip = 0, limit = 10000 } = {}) {
   if (!Album.validateId(id)) {
     throw new ApiError({
       status: 400,
@@ -131,7 +131,7 @@ $router.get('/:id/albums', async (req, res) => {
     includeId: true,
     sort: req.query.sort || 'name:1', // sorting is different for albums and photos
     skip: parseInt(Number(req.query.skip || 0)),
-    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 200, 200)
+    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 1000, 1000)
   }))
 })
 $router.get('/:id/photos', async (req, res) => {
@@ -139,7 +139,7 @@ $router.get('/:id/photos', async (req, res) => {
     includeId: true,
     sort: req.query.sort || 'created:1', // sorting is different for albums and photos
     skip: parseInt(Number(req.query.skip || 0)),
-    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 120, 120)
+    limit: Math.min(parseInt(Number(req.query.limit || 0)) || 10000, 10000)
   }))
 })
 $router.get('/:id/info', async (req, res) => {
