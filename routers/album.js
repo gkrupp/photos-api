@@ -64,6 +64,22 @@ async function getAlbumPhotos (id, details = 'default', { includeId = true, sort
   }
 }
 
+async function getAlbumPhoto (photoId, details = 'default', { includeId = true, sort = 'created:1', skip = 0, limit = 10000 } = {}) {
+  if (!Photo.validateId(photoId)) {
+    throw new ApiError({
+      status: 400,
+      message: 'Invalid \'photoId\'.'
+    })
+  }
+  const aggrOpts = { includeId, sort, skip, limit }
+  const items = await Photo.apiGet({ id: photoId }, details, aggrOpts, { one: false })
+  return {
+    count: 1,
+    params: aggrOpts,
+    items
+  }
+}
+
 async function getAlbumInfo (id, details = 'default', { includeId = false, size = true, span = true } = {}) {
   if (!Album.validateId(id)) {
     throw new ApiError({
@@ -161,5 +177,6 @@ module.exports = {
   getAlbumAlbums,
   getAlbumPhotos,
   getAlbumInfo,
-  getAlbumUsers
+  getAlbumUsers,
+  getAlbumPhoto
 }

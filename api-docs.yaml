@@ -119,8 +119,8 @@ components:
       description: Pagination limit
       schema:
         type: number
-        default: 100
-        maximum: 200
+        default: 1000
+        maximum: 1000
     photolimit:
       name: limit
       in: query
@@ -128,8 +128,8 @@ components:
       description: Pagination limit
       schema:
         type: number
-        default: 100
-        maximum: 200
+        default: 10000
+        maximum: 10000
   responses:
     PhotoFile:
       description: PhotoFile
@@ -354,7 +354,7 @@ paths:
       tags:
         - view
       summary: Combined album view by ID
-      description: Returns {albums,photos,users} in an album
+      description: Returns {album,info,albums,photos,users} in an album
       operationId: viewAlbum
       parameters:
       - $ref: '#/components/parameters/albumId'
@@ -363,6 +363,25 @@ paths:
       responses:
         200:
           description: Combined {albums,photos,users} object
+        400:
+          description: Malformed {albumId}
+        404:
+          description: Album not found
+  
+  /view/photo/{photoId}:
+    get:
+      tags:
+        - view
+      summary: Combined photo view by ID
+      description: Returns {album,info,albums,photos,users} in an album
+      operationId: viewAlbum
+      parameters:
+      - $ref: '#/components/parameters/albumId'
+      - $ref: '#/components/parameters/details'
+      - $ref: '#/components/parameters/skip'
+      responses:
+        200:
+          description: Combined {album,info,albums,photos,users} object
         400:
           description: Malformed {albumId}
         404:
