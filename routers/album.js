@@ -74,7 +74,7 @@ async function getAlbumPhoto (photoId, details = 'default', { includeId = true, 
   const aggrOpts = { includeId, sort, skip, limit }
   const items = await Photo.apiGet({ id: photoId }, details, aggrOpts, { one: false })
   return {
-    count: 1,
+    count: items.length,
     params: aggrOpts,
     items
   }
